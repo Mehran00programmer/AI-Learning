@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<meta name="description" content="قسمت 06 جزوه مبانی و کاربردهای هوش مصنوعی — جستجوی خصمانه">
+<meta name="author" content="مهران غلامی مقدم">
+<title>قسمت 06 — جستجوی خصمانه</title>
+<link rel="icon" href="mehran-favicon.ico" sizes="any">
+<link rel="canonical" href="https://mehran00programmer.github.io/AI-Learning/part-06.html">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="reading-progress">
+  <div class="reading-progress-bar"></div>
+</div>
+
+<header class="doc-header">
+  <div class="page">
+    <div class="hero-badge">قسمت 06</div>
+    <h1 class="doc-title">جستجوی خصمانه</h1>
+    <p class="doc-subtitle">
+      Minimax، هرس آلفا-بتا و بازی‌های شانسی
+    </p>
+
+    <div class="author-card">
+      <div class="author-name">مهران غلامی مقدم</div>
+      <a class="author-link" href="https://github.com/Mehran00programmer" target="_blank" rel="noopener noreferrer" aria-label="گیت‌هاب مهران غلامی مقدم">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        github.com/Mehran00programmer
+      </a>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="toc-wrap fade-in">
+    <div class="toc-header">فهرست مطالب این قسمت</div>
+    <ul class="toc-list">
+      <li><a class="toc-link" href="#s1"><span class="num">01</span><span>بازی‌ها و تنظیمات مسئله</span></a></li>
+      <li><a class="toc-link" href="#s2"><span class="num">02</span><span>انتخاب کنش و تابع ارزیابی</span></a></li>
+      <li><a class="toc-link" href="#s3"><span class="num">03</span><span>الگوریتم Minimax</span></a></li>
+      <li><a class="toc-link" href="#s4"><span class="num">04</span><span>هرس آلفا-بتا</span></a></li>
+      <li><a class="toc-link" href="#s5"><span class="num">05</span><span>کارایی هرس و بهبودها</span></a></li>
+      <li><a class="toc-link" href="#s6"><span class="num">06</span><span>وضعیت فعلی برنامه‌های بازی</span></a></li>
+      <li><a class="toc-link" href="#s7"><span class="num">07</span><span>بازی‌های شانسی</span></a></li>
+    </ul>
+  </aside>
+
+  <main>
+
+    <section class="section fade-in" id="s1">
+      <div class="section-head">
+        <span class="section-num">01</span>
+        <h2 class="section-title">بازی‌ها و تنظیمات مسئله</h2>
+      </div>
+      <p>
+        بازی‌هایی مثل شطرنج و گو محیط‌های فشرده‌ای هستند که عدم قطعیت تعامل با دنیای واقعی را شبیه‌سازی می‌کنند. تنظیم مورد بحث: بازی دونفره، نوبتی، قطعی، کاملاً مشاهده‌پذیر، <bdi>zero-sum</bdi> و دارای محدودیت زمانی.
+      </p>
+      <ul>
+        <li>بازیکن <bdi>MAX</bdi> شروع می‌کند و <bdi>MIN</bdi> رقیب اوست؛ کنش‌ها به‌نوبت انجام می‌شوند</li>
+        <li>تابع جانشین کنش‌های مجاز و حالت‌های نتیجه را می‌دهد</li>
+        <li>آزمون پایان (<bdi>terminal test</bdi>) مشخص می‌کند بازی تمام شده و برد MAX، باخت یا مساوی است</li>
+      </ul>
+      <p>
+        عدم قطعیت اینجا از کنش‌های رقیب می‌آید و هیچ برنامه‌ای موفقیت MAX را در برابر هر پاسخ MIN تضمین نمی‌کند. فضای حالت بزرگ است؛ مثلاً در شطرنج حدود ۱۰⁴⁰ حالت، ضریب انشعاب ≈ ۳۵ و حدود ۱۰۰ حرکت در هر بازی.
+      </p>
+    </section>
+
+    <section class="section fade-in" id="s2">
+      <div class="section-head">
+        <span class="section-num">02</span>
+        <h2 class="section-title">انتخاب کنش و تابع ارزیابی</h2>
+      </div>
+      <ol class="flow">
+        <li>
+          <strong>۱</strong>
+          <span>با حالت فعلی، درخت بازی را تا عمق حداکثر ممکن <code>h</code> (افق، <bdi>horizon</bdi>) در زمان مجاز بساز.</span>
+        </li>
+        <li>
+          <strong>۲</strong>
+          <span>حالت‌های برگ را با تابع ارزیابی بسنج.</span>
+        </li>
+        <li>
+          <strong>۳</strong>
+          <span>مقادیر را از برگ‌ها به ریشه پس‌انتشار کن و بهترین کنش را با فرض بدترین پاسخ MIN انتخاب کن.</span>
+        </li>
+      </ol>
+      <p>
+        تابع ارزیابی <code>e(s)</code> تخمینی هیوریستیک از مطلوب بودن <code>s</code> برای MAX است: <code>e>0</code> یعنی به نفع MAX، <code>e<0</code> به نفع MIN و <code>e=0</code> خنثی. معمولاً مجموع وزن‌دار ویژگی‌هاست: <code>e(s) = Σ wᵢ·fᵢ(s)</code> (مثلاً تعداد مهره‌ها، تعداد حرکت‌ها، خانه‌های تحت کنترل).
+      </p>
+      <div class="callout note">
+        <span class="callout-label">مثال دوز</span>
+        <p>
+          <code>e(s)</code> = تعداد سطر/ستون/قطرهای باز برای MAX منهای تعداد آن‌ها برای MIN.
+        </p>
+      </div>
+    </section>
+
+    <section class="section fade-in" id="s3">
+      <div class="section-head">
+        <span class="section-num">03</span>
+        <h2 class="section-title">الگوریتم Minimax</h2>
+      </div>
+      <p>
+        گره MAX بیشینه ارزش فرزندانش و گره MIN کمینه ارزش فرزندانش را می‌گیرد؛ در ریشه حرکتی انتخاب می‌شود که به فرزند MIN با بزرگ‌ترین مقدار پس‌انتشاریافته می‌رسد.
+      </p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">Pseudocode — Minimax</span>
+        </div>
+        <pre><span class="kw">function</span> MINIMAX(s, depth, isMax)
+    <span class="kw">if</span> TERMINAL(s) or depth = 0 <span class="kw">then</span> <span class="kw">return</span> e(s)
+    <span class="kw">if</span> isMax <span class="kw">then</span> <span class="kw">return</span> max over s&#x27; in SUCC(s) of MINIMAX(s&#x27;, depth-1, false)
+    <span class="kw">else</span>         <span class="kw">return</span> min over s&#x27; in SUCC(s) of MINIMAX(s&#x27;, depth-1, true)</pre>
+      </div>
+      <div class="callout key">
+        <span class="callout-label">چرا مقدار پس‌انتشاریافته؟</span>
+        <p>
+          اگر <code>e</code> قابل اعتماد باشد، مقدار پس‌انتشاریافته تخمین بهتری از ارزش حالت است، چون فرض می‌کند MIN هم خوب بازی می‌کند. در هر نوبت فقط یک حرکت انتخاب می‌شود و این روند تکرار می‌شود.
+        </p>
+      </div>
+    </section>
+
+    <section class="section fade-in" id="s4">
+      <div class="section-head">
+        <span class="section-num">04</span>
+        <h2 class="section-title">هرس آلفا-بتا</h2>
+      </div>
+      <p>
+        درخت را عمق‌اول تا عمق <code>h</code> کاوش می‌کنیم و شاخه‌هایی را که نمی‌توانند تصمیم نهایی را تغییر دهند هرس می‌کنیم.
+      </p>
+      <ul>
+        <li>مقدار <code>β</code> یک گره MIN کران بالا برای مقدار نهایی آن است (هرگز زیاد نمی‌شود)</li>
+        <li>مقدار <code>α</code> یک گره MAX کران پایین برای مقدار نهایی آن است (هرگز کم نمی‌شود)</li>
+      </ul>
+      <div class="callout key">
+        <span class="callout-label">قواعد قطع</span>
+        <p>
+          جستجو زیر گره MAX وقتی قطع می‌شود که <code>α</code> آن ≥ <code>β</code> یکی از اجدادِ MIN باشد؛ زیر گره MIN وقتی که <code>β</code> آن ≤ <code>α</code> یکی از اجدادِ MAX باشد.
+        </p>
+      </div>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">Pseudocode — Alpha-Beta</span>
+        </div>
+        <pre><span class="kw">function</span> AB(s, depth, alpha, beta, isMax)
+    <span class="kw">if</span> TERMINAL(s) or depth = 0 <span class="kw">then</span> <span class="kw">return</span> e(s)
+    <span class="kw">for</span> <span class="kw">each</span> child c of s:
+        v &lt;- AB(c, depth-1, alpha, beta, not isMax)
+        <span class="kw">if</span> isMax <span class="kw">then</span> alpha &lt;- max(alpha, v) <span class="kw">else</span> beta &lt;- min(beta, v)
+        <span class="kw">if</span> alpha &gt;= beta <span class="kw">then</span> <span class="kw">break</span>      // prune
+    <span class="kw">return</span> alpha <span class="kw">if</span> isMax <span class="kw">else</span> beta</pre>
+      </div>
+    </section>
+
+    <section class="section fade-in" id="s5">
+      <div class="section-head">
+        <span class="section-num">05</span>
+        <h2 class="section-title">کارایی هرس و بهبودها</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>حالت</th><th>تعداد گره بررسی‌شده</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Minimax</td><td><code>O(b^h)</code></td></tr>
+            <tr><td>آلفا-بتا در بدترین حالت</td><td><code>O(b^h)</code></td></tr>
+            <tr><td>ترتیب‌دهی کامل (فرزندان MAX به‌ترتیب نزولی و فرزندان MIN صعودی)</td><td><code>O(b^{h/2})</code> [Knuth & Moore]</td></tr>
+            <tr><td>ترتیب تصادفی (میانگین)</td><td>≈ <code>O(b^{3h/4})</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        ترتیب کامل به یک اوراکل نیاز دارد، پس در عمل فرزندان را بر اساس مقادیر دور قبلی (<bdi>iterative deepening</bdi>) مرتب می‌کنند. بهبودهای دیگر: افق تطبیقی، <bdi>extended search</bdi> برای مقابله با <bdi>horizon effect</bdi>، <bdi>singular extension</bdi>، <bdi>transposition table</bdi> برای حالت‌های تکراری و <bdi>null-move search</bdi>.
+      </p>
+    </section>
+
+    <section class="section fade-in" id="s6">
+      <div class="section-head">
+        <span class="section-num">06</span>
+        <h2 class="section-title">وضعیت فعلی برنامه‌های بازی</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>بازی</th><th>وضعیت</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Checkers</td><td><bdi>Chinook</bdi> در ۱۹۹۴ قهرمان جهان شد و در ۲۰۰۷ شکست‌ناپذیر اعلام شد؛ پایگاه داده پایانی با ۴۴۴ میلیارد وضعیت (همه چیدمان‌های ≤ ۸ مهره)</td></tr>
+            <tr><td>Chess</td><td><bdi>Deep Blue</bdi> در ۱۹۹۷ کاسپاروف را شکست داد (۳٫۵ بر ۲٫۵)؛ <bdi>Deep Junior</bdi> در ۲۰۰۳ به تساوی ۳-۳ رسید</td></tr>
+            <tr><td>Othello</td><td><bdi>Logistello</bdi> در ۱۹۹۷ مورا‌کامی را ۶ بر ۰ شکست داد</td></tr>
+            <tr><td>Go</td><td>ضریب انشعاب بسیار زیاد است؛ برنامه‌ها به پایگاه داده‌های بزرگ و تشخیص الگو تکیه دارند</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout note">
+        <span class="callout-label">راز موفقیت</span>
+        <p>
+          آلفا-بتا + عمق‌دهی تکراری + جستجوی گسترش‌یافته + جدول جابه‌جایی + پایگاه داده‌های بزرگ، با ارزیابی‌های بسیار تنظیم‌شده، مثل یک ماشین مسابقه F1.
+        </p>
+      </div>
+    </section>
+
+    <section class="section fade-in" id="s7">
+      <div class="section-head">
+        <span class="section-num">07</span>
+        <h2 class="section-title">بازی‌های شانسی</h2>
+      </div>
+      <p>
+        در بازی‌هایی با عنصر شانس (مثل تخته‌نرد) گره‌های <bdi>chance</bdi> اضافه می‌شوند و مقدارشان میانگین وزن‌دار فرزندان است:
+      </p>
+      <div class="callout key">
+        <span class="callout-label">Expectiminimax</span>
+        <p>
+          <code>v(n) = Σ P(child)·Minimax(child)</code>؛ مثلاً <code>0.5×3 + 0.5×4 ...</code>. برای بازی‌های چندنفره، بازی‌های با حالت‌های جزئی‌مشاهده‌پذیر (ورق) از جستجو در فضای باور استفاده می‌شود. گره‌ها بیشتر می‌شوند و جستجو سخت‌تر.
+        </p>
+      </div>
+    </section>
+
+    <nav class="part-nav">
+      <a class="part-nav-btn" href="part-05.html">
+        <span class="arrow">&#8594;</span>
+        قسمت قبلی
+      </a>
+      <a class="part-nav-btn home" href="index.html">
+        فهرست مطالب
+      </a>
+      <a class="part-nav-btn" href="part-07.html">
+        قسمت بعدی
+        <span class="arrow">&#8592;</span>
+      </a>
+    </nav>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  <div class="footer-name">مهران غلامی مقدم</div>
+  <a class="author-link" href="https://github.com/Mehran00programmer" target="_blank" rel="noopener noreferrer" aria-label="گیت‌هاب مهران غلامی مقدم">
+    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+    </svg>
+    github.com/Mehran00programmer
+  </a>
+</footer>
+
+<button class="back-to-top" type="button" aria-label="بازگشت به بالا">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 13V3"/>
+    <polyline points="3 8 8 3 13 8"/>
+  </svg>
+</button>
+
+<button class="theme-toggle" type="button" aria-label="تغییر تم">
+  <svg class="icon-moon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 9.5A6 6 0 0 1 6.5 2 6 6 0 1 0 14 9.5z"/>
+  </svg>
+  <svg class="icon-sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="8" cy="8" r="3"/>
+    <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.5 1.5M11.5 11.5L13 13M13 3l-1.5 1.5M4.5 11.5L3 13"/>
+  </svg>
+</button>
+
+<script src="assets/app.js"></script>
+
+</body>
+</html>

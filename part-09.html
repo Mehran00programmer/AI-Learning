@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<meta name="description" content="قسمت 09 جزوه مبانی و کاربردهای هوش مصنوعی — منطق مرتبه اول">
+<meta name="author" content="مهران غلامی مقدم">
+<title>قسمت 09 — منطق مرتبه اول</title>
+<link rel="icon" href="mehran-favicon.ico" sizes="any">
+<link rel="canonical" href="https://mehran00programmer.github.io/AI-Learning/part-09.html">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="reading-progress">
+  <div class="reading-progress-bar"></div>
+</div>
+
+<header class="doc-header">
+  <div class="page">
+    <div class="hero-badge">قسمت 09</div>
+    <h1 class="doc-title">منطق مرتبه اول</h1>
+    <p class="doc-subtitle">
+      FOL، سورها، یکسان‌سازی و Resolution
+    </p>
+
+    <div class="author-card">
+      <div class="author-name">مهران غلامی مقدم</div>
+      <a class="author-link" href="https://github.com/Mehran00programmer" target="_blank" rel="noopener noreferrer" aria-label="گیت‌هاب مهران غلامی مقدم">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        github.com/Mehran00programmer
+      </a>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="toc-wrap fade-in">
+    <div class="toc-header">فهرست مطالب این قسمت</div>
+    <ul class="toc-list">
+      <li><a class="toc-link" href="#s1"><span class="num">01</span><span>محدودیت‌های منطق گزاره‌ای</span></a></li>
+      <li><a class="toc-link" href="#s2"><span class="num">02</span><span>عناصر منطق مرتبه اول</span></a></li>
+      <li><a class="toc-link" href="#s3"><span class="num">03</span><span>نحو FOL</span></a></li>
+      <li><a class="toc-link" href="#s4"><span class="num">04</span><span>سورها و ترجمه از انگلیسی</span></a></li>
+      <li><a class="toc-link" href="#s5"><span class="num">05</span><span>نکات و اشتباهات رایج</span></a></li>
+      <li><a class="toc-link" href="#s6"><span class="num">06</span><span>استنتاج در FOL</span></a></li>
+      <li><a class="toc-link" href="#s7"><span class="num">07</span><span>تصمیم‌پذیری و گودل</span></a></li>
+      <li><a class="toc-link" href="#s8"><span class="num">08</span><span>مثال چتر و کاربردها</span></a></li>
+    </ul>
+  </aside>
+
+  <main>
+
+    <section class="section fade-in" id="s1">
+      <div class="section-head">
+        <span class="section-num">01</span>
+        <h2 class="section-title">محدودیت‌های منطق گزاره‌ای</h2>
+      </div>
+      <p>
+        در منطق گزاره‌ای «شیء» و «رابطه بین اشیا» وجود ندارد. برای جمله «اگر هم‌اتاقی‌ات از باران خیس است، چتر ندارد» باید برای هر چتر یک نماد جدا (<code>RoommateCarryingUmbrella0, 1, 2, …</code>) بنویسیم. این نام‌ها برای ما معنا دارند ولی صوری‌ترین حالت می‌توانستیم همه را <code>P</code> بنامیم.
+      </p>
+    </section>
+
+    <section class="section fade-in" id="s2">
+      <div class="section-head">
+        <span class="section-num">02</span>
+        <h2 class="section-title">عناصر منطق مرتبه اول</h2>
+      </div>
+      <ul>
+        <li>اشیا: <code>Umbrella0, Person0, John, Earth</code></li>
+        <li>رابطه‌ها: یگانی (ویژگی) مثل <code>IsUmbrella(x)</code>، <code>Round(ball)</code>، <code>Prime(7)</code> و n-تایی مثل <code>Carrying(p, u)</code>، <code>Married(John, Mary)</code></li>
+        <li>توابع: مقدارشان یک شیء است مثل <code>Roommate(Person0)</code>، <code>Plus(2,3)</code>، <code>Father(Dan)</code></li>
+        <li>تساوی: <code>Roommate(Person0) = Person1</code></li>
+      </ul>
+      <p>
+        تابع را می‌توان روی هر شیء اعمال کرد (مثل <code>Roommate(Umbrella0)</code>) و لازم نیست برای مقدارش نام جدا داشته باشیم.
+      </p>
+    </section>
+
+    <section class="section fade-in" id="s3">
+      <div class="section-head">
+        <span class="section-num">03</span>
+        <h2 class="section-title">نحو FOL</h2>
+      </div>
+      <ul>
+        <li>نمادهای ثابت (constant) = اشیا، نمادهای محمول (predicate) = رابطه‌ها، نمادهای تابع = توابع؛ هر نماد تفسیر دارد</li>
+        <li>Sentence → AtomicSentence | Sentence Connective Sentence | Quantifier Variable Sentence | ¬Sentence</li>
+        <li>AtomicSentence → Predicate(Term, …) | Term = Term</li>
+        <li>Term → Function(Term, …) | Constant | Variable</li>
+        <li>Connective: ∨ ∧ ⇒ ⇔ و Quantifier: ∃ ∀</li>
+      </ul>
+    </section>
+
+    <section class="section fade-in" id="s4">
+      <div class="section-head">
+        <span class="section-num">04</span>
+        <h2 class="section-title">سورها و ترجمه از انگلیسی</h2>
+      </div>
+      <p>
+        متغیرها می‌توانند به چند شیء اشاره کنند: ∀ («برای همه») و ∃ («وجود دارد»). مثال: <code>∀x: CompletelyWhite(x) ⇒ ¬PartiallyBlack(x)</code>.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>جمله</th><th>FOL</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>جان یک چتر دارد</td><td><code>∃y: Has(John,y) ∧ IsUmbrella(y)</code></td></tr>
+            <tr><td>هر کس چتر دارد خیس نیست</td><td><code>∀x: (IsPerson(x) ⇒ ((∃y: Has(x,y) ∧ IsUmbrella(y)) ⇒ ¬IsWet(x)))</code></td></tr>
+            <tr><td>جان دست‌کم دو چتر دارد</td><td><code>∃x∃y: Has(John,x) ∧ IsUmbrella(x) ∧ Has(John,y) ∧ IsUmbrella(y) ∧ ¬(x=y)</code></td></tr>
+            <tr><td>جان حداکثر دو چتر دارد</td><td><code>∀x,y,z: (Has(John,x)∧IsUmbrella(x)∧Has(John,y)∧IsUmbrella(y)∧Has(John,z)∧IsUmbrella(z)) ⇒ (x=y ∨ x=z ∨ y=z)</code></td></tr>
+            <tr><td>هر تیمی تیم دیگری را شکست می‌دهد</td><td><code>∀x: IsTeam(x) ⇒ ∃y: (IsTeam(y) ∧ ¬(x=y) ∧ Defeats(x,y))</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section fade-in" id="s5">
+      <div class="section-head">
+        <span class="section-num">05</span>
+        <h2 class="section-title">نکات و اشتباهات رایج</h2>
+      </div>
+      <ul>
+        <li>دمورگان برای سورها: <code>¬∀x P ≡ ∃x ¬P</code> و <code>¬∃x P ≡ ∀x ¬P</code></li>
+        <li>ترتیب سورهای تو در تو مهم است: <code>∀x∃y Father(x,y)</code> با <code>∃y∀x Father(x,y)</code> فرق دارد</li>
+        <li>با <code>∀</code> معمولاً از ⇒ استفاده کن: <code>∀x King(x) ∧ Person(x)</code> خیلی قوی است (همه چیز باید شاه و آدم باشد)</li>
+        <li>با <code>∃</code> معمولاً از ∧ استفاده کن: <code>∃x King(x) ⇒ Person(x)</code> خیلی ضعیف است (هر شیء غیر شاه آن را درست می‌کند)</li>
+      </ul>
+      <div class="callout warn">
+        <span class="callout-label">فراتر از FOL</span>
+        <p>
+          نمی‌توان درباره رابطه‌ها و توابع به‌صورت کلی استدلال کرد (مثل «هر ویژگی <code>p</code> جان، ویژگی هم‌اتاقی‌اش هم هست»)؛ این منطق مرتبه بالاتر است.
+        </p>
+      </div>
+    </section>
+
+    <section class="section fade-in" id="s6">
+      <div class="section-head">
+        <span class="section-num">06</span>
+        <h2 class="section-title">استنتاج در FOL</h2>
+      </div>
+      <ul>
+        <li><bdi>SUBST</bdi>: جایگزینی متغیرها، مثلاً <code>SUBST({x/John}, IsHealthy(x) ⇒ ¬HasACold(x))</code></li>
+        <li>نمونه‌سازی ∀: از <code>∀x: a</code> به‌دست می‌آید <code>SUBST({x/g}, a)</code></li>
+        <li>نمونه‌سازی ∃: ثابت جدید <bdi>Skolem constant</bdi>؛ اگر ∃ بعد از ∀ باشد باید تابع جدید <bdi>Skolem function</bdi> استفاده کرد (مثلاً <code>∀x: IsParentOf(k(x), x)</code> نه <code>IsParentOf(k, x)</code>)</li>
+        <li><bdi>Generalized modus ponens</bdi>: از <code>∀x: Loves(John,x)</code> و <code>∀y: Loves(y,Jane) ⇒ FeelsAppreciatedBy(Jane,y)</code> با <code>{x/Jane, y/John</code>} نتیجه <code>FeelsAppreciatedBy(Jane, John)</code></li>
+        <li><bdi>Unification</bdi>: جایگزینی‌ای را بیاب که کلی‌ترین باشد؛ مثلاً <code>{x/z, y/Spoon, u/Bread, v/z</code>} نتیجه عام‌تری از <code>{x/John, …</code>} می‌دهد</li>
+        <li>Resolution در FOL: بندها را در شکل کانونی بنویس و بعد از unify بندها را ترکیب کن؛ با حذف لیترال‌های تکراری کامل است</li>
+      </ul>
+      <p>
+        مثال Resolution: از <code>¬Knows(John,x) ∨ IsMean(x) ∨ Loves(John,x)</code> و <code>Loves(Jane,y) ∨ Knows(y,Jane)</code> با <code>{x/Jane, y/John</code>} نتیجه می‌شود <code>IsMean(Jane) ∨ Loves(John,Jane) ∨ Loves(Jane,John)</code>.
+      </p>
+    </section>
+
+    <section class="section fade-in" id="s7">
+      <div class="section-head">
+        <span class="section-num">07</span>
+        <h2 class="section-title">تصمیم‌پذیری و گودل</h2>
+      </div>
+      <ul>
+        <li>تعیین استلزام در FOL <bdi>semidecidable</bdi> است: الگوریتمی هست که برای هر جمله لازم‌الاستنتاج در نهایت اثبات تولید می‌کند، ولی برای جمله غیرلازم ممکن است هرگز پایان نیابد</li>
+        <li>قضیه ناتمامیت گودل (غیررسمی): هر سیستم اصول سازگار که به قدر کافی غنی برای حساب پایه (شامل استقرا) باشد، جمله‌های درستی دارد که از آن اصول اثبات‌پذیر نیستند</li>
+      </ul>
+      <div class="callout note">
+        <span class="callout-label">تعریف</span>
+        <p>
+          اصول موضوعه (<bdi>axioms</bdi>) دانش اولیه KB هستند و قضیه‌ها (<bdi>theorems</bdi>) از آن‌ها استنتاج می‌شوند.
+        </p>
+      </div>
+    </section>
+
+    <section class="section fade-in" id="s8">
+      <div class="section-head">
+        <span class="section-num">08</span>
+        <h2 class="section-title">مثال چتر و کاربردها</h2>
+      </div>
+      <p>
+        مسئله چتر در FOL: خانه شما فقط یک نفر دیگر دارد که خیس است؛ خیسی از باران یا آب‌پاش است؛ خیسی از باران یعنی چتر ندارد؛ چتری که خانه‌اش نیست باید دست یکی از ساکنان آن خانه باشد؛ شما چتر ندارید. آیا نتیجه می‌شود آب‌پاش روشن است؟ با برهان‌گر قضیه (مثلاً <bdi>SPASS</bdi>) قابل بررسی است؛ همین‌طور مسئله «سه شیء و همسر».
+      </p>
+      <p>
+        کاربردها: اثبات نتایج ریاضی جدید، راستی‌آزمایی سخت‌افزار و نرم‌افزار (خروجی برای همه ورودی‌ها ویژگی لازم را دارد)، سنتز سخت‌افزار و نرم‌افزار و کمک به برنامه‌ریزی.
+      </p>
+    </section>
+
+    <nav class="part-nav">
+      <a class="part-nav-btn" href="part-08.html">
+        <span class="arrow">&#8594;</span>
+        قسمت قبلی
+      </a>
+      <a class="part-nav-btn home" href="index.html">
+        فهرست مطالب
+      </a>
+      <span class="part-nav-btn disabled">
+        قسمت بعدی
+        <span class="arrow">&#8592;</span>
+      </span>
+    </nav>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  <div class="footer-name">مهران غلامی مقدم</div>
+  <a class="author-link" href="https://github.com/Mehran00programmer" target="_blank" rel="noopener noreferrer" aria-label="گیت‌هاب مهران غلامی مقدم">
+    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+    </svg>
+    github.com/Mehran00programmer
+  </a>
+</footer>
+
+<button class="back-to-top" type="button" aria-label="بازگشت به بالا">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 13V3"/>
+    <polyline points="3 8 8 3 13 8"/>
+  </svg>
+</button>
+
+<button class="theme-toggle" type="button" aria-label="تغییر تم">
+  <svg class="icon-moon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 9.5A6 6 0 0 1 6.5 2 6 6 0 1 0 14 9.5z"/>
+  </svg>
+  <svg class="icon-sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="8" cy="8" r="3"/>
+    <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.5 1.5M11.5 11.5L13 13M13 3l-1.5 1.5M4.5 11.5L3 13"/>
+  </svg>
+</button>
+
+<script src="assets/app.js"></script>
+
+</body>
+</html>

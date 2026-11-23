@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<meta name="description" content="قسمت 07 جزوه مبانی و کاربردهای هوش مصنوعی — ارضای محدودیت">
+<meta name="author" content="مهران غلامی مقدم">
+<title>قسمت 07 — ارضای محدودیت</title>
+<link rel="icon" href="mehran-favicon.ico" sizes="any">
+<link rel="canonical" href="https://mehran00programmer.github.io/AI-Learning/part-07.html">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="reading-progress">
+  <div class="reading-progress-bar"></div>
+</div>
+
+<header class="doc-header">
+  <div class="page">
+    <div class="hero-badge">قسمت 07</div>
+    <h1 class="doc-title">ارضای محدودیت</h1>
+    <p class="doc-subtitle">
+      CSP، Backtracking، Forward Checking و AC3
+    </p>
+
+    <div class="author-card">
+      <div class="author-name">مهران غلامی مقدم</div>
+      <a class="author-link" href="https://github.com/Mehran00programmer" target="_blank" rel="noopener noreferrer" aria-label="گیت‌هاب مهران غلامی مقدم">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        github.com/Mehran00programmer
+      </a>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="toc-wrap fade-in">
+    <div class="toc-header">فهرست مطالب این قسمت</div>
+    <ul class="toc-list">
+      <li><a class="toc-link" href="#s1"><span class="num">01</span><span>مسئله ارضای محدودیت (CSP)</span></a></li>
+      <li><a class="toc-link" href="#s2"><span class="num">02</span><span>مثال‌های CSP</span></a></li>
+      <li><a class="toc-link" href="#s3"><span class="num">03</span><span>CSP به‌عنوان جستجو و خاصیت جابه‌جایی</span></a></li>
+      <li><a class="toc-link" href="#s4"><span class="num">04</span><span>الگوریتم Backtracking</span></a></li>
+      <li><a class="toc-link" href="#s5"><span class="num">05</span><span>Forward Checking</span></a></li>
+      <li><a class="toc-link" href="#s6"><span class="num">06</span><span>هیوریستیک‌های انتخاب متغیر و مقدار</span></a></li>
+      <li><a class="toc-link" href="#s7"><span class="num">07</span><span>الگوریتم AC3</span></a></li>
+      <li><a class="toc-link" href="#s8"><span class="num">08</span><span>ترکیب Backtracking و انتشار قید</span></a></li>
+      <li><a class="toc-link" href="#s9"><span class="num">09</span><span>بهره‌گیری از ساختار CSP</span></a></li>
+      <li><a class="toc-link" href="#s10"><span class="num">10</span><span>کاربردها</span></a></li>
+    </ul>
+  </aside>
+
+  <main>
+
+    <section class="section fade-in" id="s1">
+      <div class="section-head">
+        <span class="section-num">01</span>
+        <h2 class="section-title">مسئله ارضای محدودیت (CSP)</h2>
+      </div>
+      <p>
+        انتشار قید (<bdi>constraint propagation</bdi>) یعنی تعیین اینکه قیدها و مقادیر ممکن یک متغیر چگونه بر مقادیر ممکن متغیرهای دیگر اثر می‌گذارند؛ شکلی از استدلال «کمترین تعهد». مثلاً در ۸-وزیر هر وزیر خانه‌های تحت حمله را حذف می‌کند و جای وزیر بعدی را در سطر/ستونی با کمترین خانه سالم می‌گذاریم.
+      </p>
+      <div class="callout key">
+        <span class="callout-label">تعریف CSP</span>
+        <p>
+          مجموعه متغیرها <code>X₁…Xₙ</code>، دامنه <code>Dᵢ</code> برای هر متغیر (معمولاً متناهی) و مجموعه قیدها <code>C₁…C_p</code> که هر کدام ترکیب‌های مجاز مقادیر زیرمجموعه‌ای از متغیرها را مشخص می‌کنند. هدف: مقداردهی به همه متغیرها به‌طوری‌که همه قیدها برقرار باشند.
+        </p>
+      </div>
+    </section>
+
+    <section class="section fade-in" id="s2">
+      <div class="section-head">
+        <span class="section-num">02</span>
+        <h2 class="section-title">مثال‌های CSP</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>مسئله</th><th>متغیرها و دامنه</th><th>قیدها</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>رنگ‌آمیزی نقشه</td><td>۷ متغیر <code>WA,NT,SA,Q,NSW,V,T</code> با دامنه <code>red,green,blue</code></td><td>دو ناحیه مجاور رنگ یکسان نداشته باشند</td></tr>
+            <tr><td>۸-وزیر</td><td><code>X₁…X₈</code> با دامنه <code>1…8</code></td><td>قیدهای دوتایی سطر، ستون و قطر</td></tr>
+            <tr><td>معمای خیابان (zebra)</td><td>نام، رنگ، نوشیدنی، شغل و حیوان هر ۵ خانه</td><td>قیدهای یگانی (<code>N₁ = Norwegian</code>)، دوتایی و همه‌متفاوت</td></tr>
+            <tr><td>زمان‌بندی کارها</td><td>کارها <code>T1…T4</code></td><td>قیدهای زمانی مثل «T1 در طول T3»</td></tr>
+            <tr><td>3-SAT</td><td>n متغیر بولی</td><td><code>p</code> بند سه‌تایی؛ مسئله NP-کامل</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        در <bdi>finite CSP</bdi> دامنه متناهی است؛ برنامه‌ریزی خطی روی اعداد حقیقی مثالی از <bdi>infinite CSP</bdi> است. در این درس فقط حالت متناهی بررسی می‌شود.
+      </p>
+    </section>
+
+    <section class="section fade-in" id="s3">
+      <div class="section-head">
+        <span class="section-num">03</span>
+        <h2 class="section-title">CSP به‌عنوان جستجو و خاصیت جابه‌جایی</h2>
+      </div>
+      <p>
+        به‌صورت مسئله جستجو: حالت = مقداردهی معتبر جزئی، حالت اولیه = مقداردهی خالی، جانشین = افزودن یک مقداردهی، آزمون هدف = <code>k = n</code>. اگر دامنه‌ها اندازه <code>d</code> داشته باشند، <code>O(dⁿ)</code> مقداردهی کامل وجود دارد.
+      </p>
+      <div class="callout key">
+        <span class="callout-label">جابه‌جایی (commutativity)</span>
+        <p>
+          ترتیب مقداردهی به متغیرها بر مقداردهی‌های کامل معتبر اثری ندارد. پس می‌توان در هر گره فقط یک متغیر را انتخاب و همه مقادیرش را امتحان کرد: ضریب انشعاب از <code>r·s</code> به <code>s</code> کاهش می‌یابد و عمق راه‌حل همان <code>n</code> می‌ماند. همچنین نیازی به نگه‌داشتن مسیر نیست.
+        </p>
+      </div>
+    </section>
+
+    <section class="section fade-in" id="s4">
+      <div class="section-head">
+        <span class="section-num">04</span>
+        <h2 class="section-title">الگوریتم Backtracking</h2>
+      </div>
+      <p>
+        <bdi>Backtracking</bdi> ساده‌شده DFS به‌صورت بازگشتی است.
+      </p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">Pseudocode — CSP-BACKTRACKING</span>
+        </div>
+        <pre>CSP-BACKTRACKING(A)
+1. <span class="kw">If</span> assignment A is complete <span class="kw">then</span> <span class="kw">return</span> A
+2. X &lt;- select a variable not in A
+3. D &lt;- select an ordering on the domain of X
+4. <span class="kw">For</span> <span class="kw">each</span> value v in D <span class="kw">do</span>
+   a. <span class="kw">Add</span> (X &lt;- v) to A
+   b. <span class="kw">If</span> A is valid <span class="kw">then</span>
+        result &lt;- CSP-BACKTRACKING(A)
+        <span class="kw">If</span> result != failure <span class="kw">then</span> <span class="kw">return</span> result
+   c. <span class="kw">Remove</span> (X &lt;- v) from A
+5. <span class="kw">Return</span> failure</pre>
+      </div>
+      <p>
+        کارایی به دو پرسش بستگی دارد: کدام متغیر بعدی باشد (برای زودتر فهمیدن تناقض) و مقادیر آن به چه ترتیبی امتحان شوند (برای زودتر یافتن راه‌حل).
+      </p>
+    </section>
+
+    <section class="section fade-in" id="s5">
+      <div class="section-head">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Forward Checking</h2>
+      </div>
+      <p>
+        هر وقت جفت <code>X ← v</code> به <code>A</code> اضافه شد، برای هر متغیر مقداردهی‌نشده <code>Y</code> که با متغیرهای <code>A</code> قید دارد، مقادیری از دامنه <code>Y</code> که قید را نقض می‌کنند حذف می‌شود. اگر دامنه‌ای تهی شود، مقداردهی فعلی به راه‌حل نمی‌رسد. هزینه: <code>O(nsd)</code> (<code>s</code> بیشترین تعداد قیدهای یک متغیر).
+      </p>
+      <p>
+        مثال رنگ‌آمیزی: پس از <code>WA=R</code>، <code>Q=G</code>، <code>V=B</code> دامنه <code>SA</code> تهی می‌شود. اما FC همه تناقض‌ها را نمی‌بیند (مثلاً <code>NT</code> و <code>SA</code> هر دو فقط <code>B</code> دارند و مجاورند)؛ برای این به انتشار قوی‌تر نیاز است.
+      </p>
+    </section>
+
+    <section class="section fade-in" id="s6">
+      <div class="section-head">
+        <span class="section-num">06</span>
+        <h2 class="section-title">هیوریستیک‌های انتخاب متغیر و مقدار</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>هیوریستیک</th><th>قاعده</th><th>دلیل</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><bdi>Most-constrained-variable</bdi> (MRV)</td><td>متغیری با کوچک‌ترین دامنه باقی‌مانده</td><td>کاهش ضریب انشعاب</td></tr>
+            <tr><td><bdi>Most-constraining-variable</bdi></td><td>در تساوی MRV، متغیری که در بیشترین قید با متغیرهای مقداردهی‌نشده است (مثلاً <code>SA</code>)</td><td>افزایش حذف مقادیر آینده</td></tr>
+            <tr><td><bdi>Least-constraining-value</bdi></td><td>مقداری که کمترین مقدار را از دامنه متغیرهای دیگر حذف می‌کند</td><td>بیشترین احتمال عدم تناقض (نیازمند FC برای هر مقدار)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout note">
+        <span class="callout-label">نکته</span>
+        <p>
+          همه متغیرها باید مقدار بگیرند، اما برای هر متغیر فقط یک مقدار لازم است؛ برای همین ترتیب انتخاب متغیر و مقدار قاعده‌های متفاوت دارند.
+        </p>
+      </div>
+    </section>
+
+    <section class="section fade-in" id="s7">
+      <div class="section-head">
+        <span class="section-num">07</span>
+        <h2 class="section-title">الگوریتم AC3</h2>
+      </div>
+      <p>
+        <bdi>AC3</bdi> سازگاری کمان را برای قیدهای دوتایی برقرار می‌کند.
+      </p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">Pseudocode — AC3</span>
+        </div>
+        <pre>REMOVE-VALUES(X, Y)
+1. removed &lt;- false
+2. <span class="kw">For</span> <span class="kw">every</span> value v in the domain of Y <span class="kw">do</span>
+     <span class="kw">If</span> there is no value u in the domain of X such that
+     the constraint on (X,Y) is satisfied <span class="kw">then</span>
+        remove v from Y&#x27;s domain; removed &lt;- true
+3. <span class="kw">Return</span> removed
+
+AC3
+1. Initialize queue Q with all (not yet instantiated) variables
+2. <span class="kw">While</span> Q is not empty <span class="kw">do</span>
+   a. X &lt;- Remove(Q)
+   b. <span class="kw">For</span> <span class="kw">every</span> (not yet instantiated) Y related to X by a binary constraint
+        <span class="kw">If</span> REMOVE-VALUES(X, Y) <span class="kw">then</span>
+           if Y&#x27;s domain is empty <span class="kw">then</span> <span class="kw">exit</span>
+           Insert(Y, Q)</pre>
+      </div>
+      <ul>
+        <li>هر متغیر حداکثر <code>d</code> بار وارد صف می‌شود و <code>REMOVE-VALUES</code> هزینه <code>O(d²)</code> دارد؛ پس AC3 هزینه <code>O(nsd³)</code> دارد (گران‌تر از FC)</li>
+        <li>AC3 همه تناقض‌ها را پیدا نمی‌کند: سه متغیر با دامنه <code>{1,2</code>} و قیدهای <code>X≠Y, X≠Z, Y≠Z</code> ناسازگارند ولی AC3 چیزی حذف نمی‌کند</li>
+        <li>قیدهای غیردوتایی هم نیازمند تعمیم‌اند</li>
+      </ul>
+      <p>
+        در ۴-وزیر: پس از قرار دادن <code>X₁=1</code> و FC، AC3 مقدارهایی از <code>X₂</code> و <code>X₃</code> حذف می‌کند تا دامنه <code>X₃</code> تهی می‌شود؛ یعنی پس‌گرد زودهنگام.
+      </p>
+    </section>
+
+    <section class="section fade-in" id="s8">
+      <div class="section-head">
+        <span class="section-num">08</span>
+        <h2 class="section-title">ترکیب Backtracking و انتشار قید</h2>
+      </div>
+      <p>
+        وقتی اکثر قیدها دوتایی‌اند، ترکیب Backtracking با FC و/یا AC3 معمولاً مصالحه خوبی بین زمان جستجو و زمان انتشار است.
+      </p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">Pseudocode — Backtracking + AC3 + FC</span>
+        </div>
+        <pre>CSP-BACKTRACKING(A, var-domains)
+1. <span class="kw">If</span> A is complete <span class="kw">then</span> <span class="kw">return</span> A
+2. <span class="kw">Run</span> AC3 and update var-domains
+3. <span class="kw">If</span> a variable has an empty domain <span class="kw">then</span> <span class="kw">return</span> failure
+4. X &lt;- select a variable not in A     // MRV, degree
+5. D &lt;- select an ordering of X&#x27;s domain  // LCV
+6. <span class="kw">For</span> <span class="kw">each</span> value v in D <span class="kw">do</span>
+   a. <span class="kw">Add</span> (X &lt;- v) to A
+   b. var-domains &lt;- forward-checking(var-domains, X, v, A)
+   c. <span class="kw">If</span> no variable has an empty domain <span class="kw">then</span>
+        result &lt;- CSP-BACKTRACKING(A, var-domains)
+        <span class="kw">If</span> result != failure <span class="kw">then</span> <span class="kw">return</span> result
+   d. <span class="kw">Remove</span> (X &lt;- v) from A
+7. <span class="kw">Return</span> failure</pre>
+      </div>
+    </section>
+
+    <section class="section fade-in" id="s9">
+      <div class="section-head">
+        <span class="section-num">09</span>
+        <h2 class="section-title">بهره‌گیری از ساختار CSP</h2>
+      </div>
+      <ul>
+        <li>اگر گراف قید چند مؤلفه دارد، برای هر مؤلفه یک CSP مستقل حل کنید (مثلاً <code>T</code> در نقشه استرالیا)</li>
+        <li>اگر گراف قید یک درخت است: متغیرها را از ریشه به برگ مرتب کنید، برای <code>j = n … 2</code> <code>REMOVE-VALUES(Xⱼ, parent)</code> را اجرا کنید، سپس به <code>X₁</code> هر مقدار معتبر بدهید و به ترتیب به هر فرزند مقداری سازگار با والد بدهید (بدون پس‌گرد)</li>
+        <li>در هر مقداردهی، متغیر مقداردار را از گراف حذف کنید؛ اگر گراف درخت شد، همان روش درخت</li>
+      </ul>
+    </section>
+
+    <section class="section fade-in" id="s10">
+      <div class="section-head">
+        <span class="section-num">10</span>
+        <h2 class="section-title">کاربردها</h2>
+      </div>
+      <p>
+        برنامه‌ریزی خدمه پرواز، مدیریت ناوگان حمل‌ونقل، زمان‌بندی قطار و پرواز، زمان‌بندی کارگاهی، عملیات بندری، طراحی و چیدمان فضایی و <bdi>radiosurgery</bdi>.
+      </p>
+      <p>
+        در پرتودرمانی با <bdi>CyberKnife</bdi> هدف سوزاندن تومور بدون آسیب به بافت سالم است: دوز تومور در بازه (مثلاً ۲۰۰۰ تا ۲۲۰۰) و دوز ساختارهای حساس زیر حد (مثلاً ۵۰۰) باید باشد که مجموعه‌ای از نامعادله‌های خطی روی شدت پرتوها می‌شود.
+      </p>
+      <p>
+        مثال دیگر: <bdi>edge labeling</bdi> (والتز، ۱۹۷۵) برچسب‌گذاری یال‌های تصویر اجسام چندوجهی به‌صورت محدب (+)، مقعر (−) یا پوششی؛ هر رأس یک متغیر با دامنه مجموعه برچسب‌های مجاز نوع رأس است و قید می‌گوید دو رأس مجاور باید برچسب یال مشترک را یکسان بدهند، و AC3 روی آن اعمال می‌شود.
+      </p>
+    </section>
+
+    <nav class="part-nav">
+      <a class="part-nav-btn" href="part-06.html">
+        <span class="arrow">&#8594;</span>
+        قسمت قبلی
+      </a>
+      <a class="part-nav-btn home" href="index.html">
+        فهرست مطالب
+      </a>
+      <a class="part-nav-btn" href="part-08.html">
+        قسمت بعدی
+        <span class="arrow">&#8592;</span>
+      </a>
+    </nav>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  <div class="footer-name">مهران غلامی مقدم</div>
+  <a class="author-link" href="https://github.com/Mehran00programmer" target="_blank" rel="noopener noreferrer" aria-label="گیت‌هاب مهران غلامی مقدم">
+    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+    </svg>
+    github.com/Mehran00programmer
+  </a>
+</footer>
+
+<button class="back-to-top" type="button" aria-label="بازگشت به بالا">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 13V3"/>
+    <polyline points="3 8 8 3 13 8"/>
+  </svg>
+</button>
+
+<button class="theme-toggle" type="button" aria-label="تغییر تم">
+  <svg class="icon-moon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 9.5A6 6 0 0 1 6.5 2 6 6 0 1 0 14 9.5z"/>
+  </svg>
+  <svg class="icon-sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="8" cy="8" r="3"/>
+    <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.5 1.5M11.5 11.5L13 13M13 3l-1.5 1.5M4.5 11.5L3 13"/>
+  </svg>
+</button>
+
+<script src="assets/app.js"></script>
+
+</body>
+</html>
