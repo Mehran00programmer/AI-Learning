@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://mehran00programmer.github.io/AI-Learning/sitemap.xml
